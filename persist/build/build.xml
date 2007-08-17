@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: build.xml,v 1.5 2005/08/25 22:38:21 julio Exp $ -->
+
+<project name="persist" default="release" basedir="..">
+
+	<!-- version -->
+	
+	<property file="build/version.properties"/>
+	
+	<!-- properties -->
+	
+	<property name="project.title" value="Persist" />
+
+	<!-- classpaths -->
+
+	<path id="project.classpath">
+		<fileset dir="build/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${java.class.path}" />
+	</path>
+
+	<!-- targets -->
+
+	<target name="release" depends="jar, src, doc">
+		<zip destfile="build/release/persist-${build.version}.zip" basedir="build/release" />
+	</target>
+
+	<target name="compile">
+		
+		<!-- clean work directory -->
+		<delete dir="build/work" includeEmptyDirs="true" failonerror="true" />
+		<mkdir dir="build/work" />
+		<mkdir dir="build/work/src" />
+		<mkdir dir="build/work/bin" />
+		
+		<!-- copy source files to work directory -->
+		<copy todir="build/work/src">
+			<fileset dir="src">
+				<exclude name="**/*.sql" />
+				<exclude name="**/*.properties" />
+			</fileset>
+		</copy>
+		
+		<!-- compile -->
+		<javac srcdir="build/work/src" destdir="build/work/bin" classpathref="project.classpath" debug="true" target="1.5"/>
+		
+		<!-- copy properties, js and txt files to bin -->
+		<copy todir="build/work/bin">
+			<fileset dir="src/tests">
+				<include name="**/*.properties" />
+				<include name="**/*.js" />
+				<include name="**/*.txt" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="jar" depends="compile">
+		<delete dir="build/release" includeEmptyDirs="true" failonerror="true" />
+		<mkdir dir="build/release" />
+		<jar destfile="build/release/persist-${build.version}.jar" basedir="build/work/bin">
+			<exclude name="**/tests/**"/>
+			<exclude name="log4j.properties"/>
+		</jar>
+	</target>
+	
+	<target name="src" depends="jar">
+		<delete dir="build/release/src" includeEmptyDirs="true" failonerror="false" />
+		<mkdir dir="build/release/src" />
+		<copy todir="build/release/src">
+			<fileset dir="src/main" />
+		</copy>
+	</target>
+
+	<target name="doc" depends="compile">
+		<delete dir="build/release/doc" includeEmptyDirs="true" failonerror="false" />
+		<mkdir dir="build/release/doc" />
+		<mkdir dir="build/release/doc/api" />
+		<mkdir dir="build/release/doc/manual" />
+		
+		<!-- javadoc -->
+		<javadoc destdir="build/release/doc/api" encoding="UTF-8" docencoding="iso-8859-1" author="true" version="true" use="false" breakiterator="true" windowtitle="${project.title}" classpathref="project.classpath" stylesheetfile="build/javadoc/stylesheet.css">
+			<fileset dir="build/work/src/main" defaultexcludes="yes">
+				<include name="**/*.java" />
+			</fileset>
+			<link href="http://java.sun.com/j2se/1.5/docs/api" offline="true" packagelistLoc="build/javadoc/j2se-1.5" />
+		</javadoc>
+		
+		<!-- manual -->
+		<copy todir="build/release/doc">
+			 <fileset dir="doc" />
+		</copy>
+	</target>
+	
+	<target name="test" depends="compile">
+		
+		<delete dir="build/work/junit" includeEmptyDirs="true" failonerror="false" />
+		<mkdir dir="build/work/junit" />
+		
+		<junit dir="." failureproperty="test.failure" printSummary="yes" fork="true" haltonerror="true">
+
+			<classpath refid="project.classpath" />
+			<classpath path="build/clover/lib/clover.jar" />
+			<classpath location="build/work/bin" />
+			
+			<formatter type="plain" />
+
+			<batchtest todir="build/work/junit">
+				<fileset id="tests.fileset" dir="build/work/src/tests">
+					<include name="net/sf/persist/tests/**/Test*.java" />
+					<exclude name="net/sf/persist/tests/common/**" />
+				</fileset>
+			</batchtest>
+		
+		</junit>
+	
+	</target>
+	
+	<target name="test-performance" depends="compile">
+		<java classname="net.sf.persist.tests.performance.PerformanceH2" args="&quot;${basedir}/build/work/performance.html&quot;">
+			<classpath path="build/release/persist-${build.version}.jar" />
+			<classpath path="build/lib/jdbc-drivers/h2-2007-08-02.jar" />
+			<classpath path="build/lib/testing/jamon-2.6.jar" />
+			<classpath location="build/work/bin" />
+		</java>
+	</target>
+	
+	<!-- cobertura -->
+	
+	<target name="cobertura" depends="compile">
+
+		<!-- clean up -->
+		<delete dir="build/cobertura/report" includeEmptyDirs="true" failonerror="true"/>
+		<delete dir="build/cobertura/instrumented" includeEmptyDirs="true" failonerror="true"/>
+		<delete dir="build/cobertura/junit" includeEmptyDirs="true" failonerror="false" />
+		<delete file="build/cobertura/cobertura.ser" failonerror="true"/>
+		<mkdir dir="build/cobertura/report" />
+		<mkdir dir="build/cobertura/instrumented" />
+		<mkdir dir="build/cobertura/junit" />		
+		
+		<!-- classpath -->
+		<path id="cobertura.classpath">
+			<fileset dir="build/cobertura/lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+		
+		<!-- taskdef -->
+		<taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+		
+		<!-- instrument classes to be used by junit -->
+		<cobertura-instrument datafile="build/cobertura/cobertura.ser" todir="build/cobertura/instrumented">
+			<fileset dir="build/work/bin">
+				<include name="**/*.class" />
+				<exclude name="**/tests/**" />
+				<exclude name="**/annotations/**"/>
+			</fileset>
+		</cobertura-instrument>
+
+		<!-- run tests over the instrumented classes -->
+		<junit dir="." failureproperty="test.failure" printSummary="yes" fork="true" haltonerror="true">
+
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="build/cobertura/cobertura.ser" />
+
+			<classpath location="build/cobertura/instrumented" /> <!-- instrumented classes first -->
+			<classpath location="build/work/bin" />
+			<classpath refid="cobertura.classpath" />
+			<classpath refid="project.classpath" />
+
+			<formatter type="plain" />
+
+			<batchtest todir="build/cobertura/junit">
+				<fileset id="tests.fileset" dir="build/work/src/tests">
+					<include name="net/sf/persist/tests/**/Test*.java" />
+					<exclude name="net/sf/persist/tests/common/**" />
+				</fileset>
+			</batchtest>
+
+		</junit>
+
+		<!-- generate code coverage report -->
+		<cobertura-report format="html" datafile="build/cobertura/cobertura.ser" destdir="build/cobertura/report">
+			<fileset dir="build/work/src/main">
+				<include name="**/*.java" />
+				<exclude name="**/annotations/**"/>
+			</fileset>
+		</cobertura-report>
+
+	</target>
+
+</project>

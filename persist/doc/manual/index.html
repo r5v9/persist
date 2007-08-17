@@ -1,0 +1,100 @@
+<html>
+
+<head>
+<title>Persist</title>
+<style>
+	body { font-family: Arial, Helvetica, Sans-Serif; font-size: 10pt; margin: 2em; }
+	.title { font-family: Tahoma, Arial, Helvetica, Sans-Serif; font-size: 19pt; color: #606060; }
+	.title2 { font-family: Tahoma, Arial, Helvetica, Sans-Serif; font-size: 15pt; color: #606060; }
+	.title3 { font-family: Tahoma, Arial, Helvetica, Sans-Serif; font-size: 13pt; color: #606060; margin-bottom: 0.5em; }
+	hr { margin-top: 1em; margin-bottom: 1em; }
+	pre { font-family: Courier New, Courier; background-color: #FAFAFA; padding: 0.5em; }
+	.navigation { float: right; border: 1px solid #E0E0E0; padding: 1em; margin-left: 1em; line-height:1.5em; background-color: #F0F0F0; }
+	a { text-decoration: none; color: #0000ff; }
+	a:hover { color: #ff0000; }
+</style>
+
+<!-- code highlighting -->
+<link href="prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="prettify.js"></script>
+
+</head>
+
+<body onload="prettyPrint()">
+
+<div class="title2">Quickstart</div>
+
+<p>A Persist engine only requires a java.sql.Connection to be created:</p>
+
+<pre class="prettyprint">Persist persist = new Persist(connection);</pre>
+
+<p>Using a Persist instance at hand it's possible to perform basic CRUD operations on mapped objects. 
+For instance, consider the following table definition:</p>
+
+<pre class="prettyprint">
+create table customer (
+  id int auto_increment,
+  name varchar(255),
+  primary key (id)
+)
+</pre>
+
+and its associated bean:
+
+<pre class="prettyprint">
+class Customer {
+   private int id;
+   private String name;
+   
+   @Column(autoIncrement=true)
+   public long getId() { return id; }
+   public void setId(long id) { this.id = id; }
+   
+   public String getName() { return name; }
+   public void setName(String name) { this.name = name; }
+}
+</pre>
+
+<p>CRUD operations can be performed using the Customer class:</p>
+
+<pre class="prettyprint">
+// create a new customer instance
+Customer customer = new Customer();
+customer.setName(&quot;a new customer&quot;);
+
+// insert data from customer into its corresponding table
+persist.insert(customer);
+
+// fetch a customer using its primary key
+Customer c = persist.readByPrimaryKey(Customer.class, 10);
+
+// fetch all customer rows and map each row to a Customer instance in a List
+List&lt;Customer&gt; allCustomersList = persist.readList(Customer.class, &quot;select * from customer&quot;);
+
+// fetch all customers and assign the ResultSet to an Iterator which maps rows to Customer instances
+Iterator allCustomersIterator = persist.readIterator(Customer.class, &quot;select * from customer&quot;);
+</pre>
+
+<p>It is also possible to get the result of queries as java.util.Map instances:</p>
+<pre class="prettyprint">
+// fetch a customer using a parametrized SQL and return the result as a map
+Map&lt;String,Object&gt; customerMap = persist.readMap(&quot;select * from customer where id=?&quot;, 10);
+
+// fetch all customers and result the results as Map instances in a List 
+List&lt;Map&lt;String,Object&gt;&gt; customerMapList = persist.readMapList(&quot;select * from customer&quot;);
+
+// fetch all customers and assign the ResultSet to an Iterator which maps rows to Map instances
+Iterator allCustomersIterator = persist.readMapIterator(&quot;select * from customer&quot;);
+</pre>
+
+<p>Arbitrary queries can be issued directly:</p>
+
+<pre class="prettyprint">
+// execute arbitrary SQL with parameters (notice the usage of varargs)
+persist.executeUpdate(&quot;delete from customer where id in (?,?)&quot;, 10, 20);
+</pre>
+
+</body>
+
+</html>
+
