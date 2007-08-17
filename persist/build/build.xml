@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- $Id: build.xml,v 1.5 2005/08/25 22:38:21 julio Exp $ -->
+<!-- $Id$ -->
 
 <project name="persist" default="release" basedir="..">
 
