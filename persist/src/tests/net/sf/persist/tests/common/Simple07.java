@@ -4,7 +4,7 @@
 package net.sf.persist.tests.common;
 
 import net.sf.persist.annotations.Column;
-import net.sf.persist.annotations.NoPersist;
+import net.sf.persist.annotations.NoColumn;
 import net.sf.persist.annotations.Table;
 
 @Table(name="simple")
@@ -18,7 +18,7 @@ public class Simple07 {
 	public long getId() { return id; }
 	public void setId(long id) { this.id = id; }
 
-	@NoPersist
+	@NoColumn
 	public String getHelloWorld() { return "hello world"; }
 	public void setHelloWorld(String stringCol) { /* do nothing */ }
 

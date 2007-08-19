@@ -13,6 +13,6 @@ public interface NameGuesser {
 	/**
 	 * Given a field or class name, return a Set with corresponding guessed names in the database.
 	 */
-	public Set<String> guess(String fieldOrClassName);
+	public Set<String> guessColumn(String fieldOrClassName);
 
 }

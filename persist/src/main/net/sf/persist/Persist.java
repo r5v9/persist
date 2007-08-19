@@ -1,3 +1,4 @@
+
 // $Id$
 
 package net.sf.persist;
@@ -8,6 +9,7 @@ import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -45,7 +47,7 @@ import java.util.concurrent.ConcurrentMap;
  * [compound_name, compound_names, compoundname, compoundnames].
  * </ul>
  * 
- * @see Mapping
+ * @see TableMapping
  */
 public final class Persist {
 
@@ -170,7 +172,7 @@ public final class Persist {
 	/**
 	 * Returns the mapping for the given object class.
 	 * 
-	 * @param objectClass {@link java.lang.Class} object to get a {@link Mapping} for
+	 * @param objectClass {@link java.lang.Class} object to get a {@link TableMapping} for
 	 * @since 1.0
 	 */
 	public Mapping getMapping(final Class objectClass) {
@@ -190,7 +192,7 @@ public final class Persist {
 			try {
 				// more than one map may end up being inserted here for the same objectClass, but this is not
 				// problematic
-				mappingCache.put(objectClass, new Mapping(connection.getMetaData(), objectClass, nameGuesser));
+				mappingCache.put(objectClass, Mapping.getMapping(connection.getMetaData(), objectClass, nameGuesser));
 
 				if (Log.isDebugEnabled(Log.ENGINE)) {
 					Log.debug(Log.ENGINE, "Cached mapping for [" + objectClass.getCanonicalName() + "]");
@@ -201,6 +203,21 @@ public final class Persist {
 		}
 
 		return mappingCache.get(objectClass);
+	}
+	
+	/**
+	 * Utility method that will get a TableMapping for a given class.
+	 * If the mapping for the class is not a TableMapping, will throw an exception specifying the
+	 * given calling method name.
+	 */
+	private TableMapping getTableMapping(Class objectClass, String callingMethodName) {
+		final Mapping mapping = getMapping(objectClass);
+		if ( !(mapping instanceof TableMapping)) {
+			throw new RuntimeSQLException("Class [" + objectClass.getCanonicalName() 
+					+ "] has a @NoTable annotation defined, therefore " + callingMethodName + " can't work with it. "
+					+ "If this class is supposed to be mapped to a table, @NoTable should not be used.");
+		}
+		return (TableMapping) mapping;
 	}
 
 	// ---------- connection ----------
@@ -393,20 +410,6 @@ public final class Persist {
 
 
 	/**
-	 * Sets parameters in the given prepared statement. Will not consider parameter types, as in 
-	 * {@link #setParameters(PreparedStatement, int[], Object[])}
-	 * which means that null parameters may cause problems in databases/drivers that do not support untyped nulls.
-	 * 
-	 * @param stmt {@link java.sql.PreparedStatement} to have parameters set into
-	 * @param parameters varargs or Object[] with the parameters values
-	 * @see #setParameters(PreparedStatement, int[], Object[])
-	 * @since 1.0
-	 */
-	public static void setParameters(final PreparedStatement stmt, final Object... parameters) {
-		setParameters(stmt, null, parameters);
-	}
-	
-	/**
 	 * Sets parameters in the given prepared statement.
 	 * <p>
 	 * Parameters will be set using PreparedStatement set methods related with the Java types of the parameters,
@@ -435,54 +438,55 @@ public final class Persist {
 	 * </ul>
 	 * 
 	 * @param stmt {@link java.sql.PreparedStatement} to have parameters set into
-	 * @param parameterTypes Types according with {@link java.sql.Types java.sql.Types} for each parameter passed. 
-	 * 		This is only important for setting null values in databases/drivers that require typed nulls, otherwise this 
-	 * 		parameter can be set to null safely. See {@link #setParameters(PreparedStatement, Object...)}
 	 * @param parameters varargs or Object[] with parameters values
 	 * @throws RuntimeSQLException if a database access error occurs or this method is called on a closed
 	 * 		PreparedStatement; if a parameter type does not have a matching set method (as outlined above)
 	 * @throws RuntimeIOException if an error occurs while reading data from a Reader or InputStream parameter
 	 * @since 1.0
 	 */
-	public static void setParameters(final PreparedStatement stmt, final int[] parameterTypes, 
-			final Object[] parameters) {
+	public static void setParameters(final PreparedStatement stmt, final Object[] parameters) {
 
 		// if no parameters, do nothing
 		if (parameters == null || parameters.length == 0) {
 			return;
 		}
 
-		if (parameterTypes != null && (parameterTypes.length != parameters.length)) {
-			throw new RuntimeSQLException("Parameter types array size [" + parameterTypes.length
-					+ "] does not match parameters array size [" + parameters.length + "]");
-		}
-
+		ParameterMetaData stmtMetaData = null;
+		
 		for (int i = 1; i <= parameters.length; i++) {
 
 			final Object parameter = parameters[i - 1];
-
+			
 			if (parameter == null) {
-				final int sqlType = (parameterTypes == null) ? java.sql.Types.OTHER : parameterTypes[i - 1];
-
-				// using the provided sql type may or may not work; for instance, oracle report type OTHER for nchar
-				// columns *and* complains about setting nulls using that type. in this case, we try again 
-				// using setObject(i,null)
-				try {
-					// first try using the provided sql type (or OTHER if no sql types were specified)
-					stmt.setNull(i, sqlType);
-				} catch (SQLException e) {
+				
+				// lazy assignment of stmtMetaData
+				if (stmtMetaData==null) {
 					try {
-						// if it doesn't work, try using setObject with null parameter
-						stmt.setObject(i, null);
-					} catch (SQLException e1) {
-						throw new RuntimeSQLException("Could not set null into parameter [" + i
-								+ "] using java.sql.Type [" + sqlType + "] or setObject(null): " + e.getMessage(), e);
+						stmtMetaData = stmt.getParameterMetaData();
+					} catch (SQLException e) {
+						throw new RuntimeException(e);
 					}
+				}
+				
+				// get sql type from prepared statement metadata
+				int sqlType;
+				try {
+					sqlType = stmtMetaData.getParameterType(i);
+				} catch (SQLException e2) {
+					// feature not supported, use NULL
+					sqlType = java.sql.Types.NULL;
+				}
+				
+				try {
+					stmt.setNull(i, sqlType); 
+				} catch (SQLException e) {
+					throw new RuntimeSQLException("Could not set null into parameter [" + i
+							+ "] using java.sql.Types [" + Log.sqlTypeToString(sqlType) + "] " + e.getMessage(), e);
 				}
 
 				if (Log.isDebugEnabled(Log.PARAMETERS)) {
 					Log.debug(Log.PARAMETERS, "Parameter [" + i + "] from PreparedStatement [" + stmt
-							+ "] set to [null]");
+							+ "] set to [null] using java.sql.Types [" + Log.sqlTypeToString(sqlType) + "]");
 				}
 
 				continue;
@@ -894,7 +898,7 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	private static Object[] getParametersFromObject(final Object object, final String[] columns, 
-			final Mapping mapping) {
+			final TableMapping mapping) {
 
 		Object[] parameters = new Object[columns.length];
 		for (int i = 0; i < columns.length; i++) {
@@ -1013,7 +1017,7 @@ public final class Persist {
 	public void setAutoGeneratedKeys(final Object object, final Result result) {
 
 		if (result.getGeneratedKeys().size() != 0) {
-			final Mapping mapping = getMapping(object.getClass());
+			final TableMapping mapping = getTableMapping(object.getClass(), "setAutoGeneratedKeys()");
 			for (int i = 0; i < mapping.getAutoGeneratedColumns().length; i++) {
 				final String columnName = mapping.getAutoGeneratedColumns()[i];
 				final Method setter = mapping.getSetterForColumn(columnName);
@@ -1031,24 +1035,6 @@ public final class Persist {
 
 	// ---------- execute ----------
 
-
-	/**
-	 * Executes an update and return a {@link Result} object containing the number of rows modified 
-	 * and auto-generated keys produced. Will not consider parameter types, as in 
-	 * {@link #executeUpdate(Class, String, String[], int[], Object[])}
-	 * which means that null parameters may cause problems in databases that do not support untyped nulls.
-	 * <p>
-	 * Parameters will be set according with the correspondence defined in 
-	 * 	{@link #setParameters(PreparedStatement, int[], Object[])} 	 
-	 * 
-	 * @see #executeUpdate(Class, String, String[], int[], Object[])
-	 * @since 1.0
-	 */
-	public Result executeUpdate(final Class objectClass, final String sql, final String[] autoGeneratedKeys,
-			final Object... parameters) {
-		return executeUpdate(objectClass, sql, autoGeneratedKeys, null, parameters);
-	}
-
 	/**
 	 * Executes an update and return a {@link Result} object containing the number of rows modified 
 	 * and auto-generated keys produced.
@@ -1060,13 +1046,11 @@ public final class Persist {
 	 * 		the auto-incremented keys. Only important if autoGeneratedKeys contains values.
 	 * @param sql SQL code to be executed.
 	 * @param autoGeneratedKeys List of columns that are going to be auto-generated during the query execution.
-	 * @param parameterTypes Types of the parameters, as defined in {@link java.sql.Types java.sql.Types}. 
-	 * 		Only important if there are null values in the parameters.
 	 * @param parameters Parameters to be used in the PreparedStatement.
 	 * @since 1.0
 	 */
 	public Result executeUpdate(final Class objectClass, final String sql, final String[] autoGeneratedKeys,
-			final int[] parameterTypes, final Object[] parameters) {
+			final Object... parameters) {
 
 		long begin = 0;
 		if (Log.isDebugEnabled(Log.PROFILING)) {
@@ -1075,7 +1059,7 @@ public final class Persist {
 
 		final PreparedStatement stmt = getPreparedStatement(sql, autoGeneratedKeys);
 
-		setParameters(stmt, parameterTypes, parameters);
+		setParameters(stmt, parameters);
 
 		int rowsModified = 0;
 		try {
@@ -1121,39 +1105,22 @@ public final class Persist {
 	}
 
 	/**
-	 * Executes an update and return the number of rows modified. Will not consider parameter types, as in 
-	 * {@link #executeUpdate(String, int[], Object[])}
-	 * which means that null parameters may cause problems in databases that do not support untyped nulls.
-	 * <p>
-	 * Parameters will be set according with the correspondence defined in 
-	 * 	{@link #setParameters(PreparedStatement, int[], Object[])} 
-	 * 
-	 * @see #executeUpdate(String, int[], Object[])
-	 * @since 1.0
-	 */
-	public int executeUpdate(final String sql, final Object... parameters) {
-		return executeUpdate(sql, null, parameters);
-	}
-
-	/**
 	 * Executes an update and returns the number of rows modified.
 	 * <p>
 	 * Parameters will be set according with the correspondence defined in 
 	 * 	{@link #setParameters(PreparedStatement, int[], Object[])} 
 	 * 
 	 * @param sql SQL code to be executed.
-	 * @param parameterTypes Types of the parameters, as defined in {@link java.sql.Types}. Only important if there are
-	 * 		null values in the parameters.
 	 * @param parameters Parameters to be used in the PreparedStatement.
 	 * @since 1.0
 	 */
-	public int executeUpdate(final String sql, final int[] parameterTypes, final Object[] parameters) {
+	public int executeUpdate(final String sql, final Object... parameters) {
 
 		final PreparedStatement stmt = getPreparedStatement(sql);
 		int rowsModified = 0;
 
 		try {
-			setParameters(stmt, parameterTypes, parameters);
+			setParameters(stmt, parameters);
 			rowsModified = stmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeSQLException("Error executing sql [" + sql + "] with parameters "
@@ -1172,17 +1139,16 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	public int insert(final Object object) {
-		final Mapping mapping = getMapping(object.getClass());
+		final TableMapping mapping = getTableMapping(object.getClass(), "insert()");
 		final String sql = mapping.getInsertSql();
 		final String[] columns = mapping.getNotAutoGeneratedColumns();
-		final int[] parameterTypes = mapping.getColumnTypes(columns);
 		final Object[] parameters = getParametersFromObject(object, columns, mapping);
 
 		int ret = 0;
 		if (updateAutoGeneratedKeys) {
 			if (mapping.supportsGetGeneratedKeys()) {
-				final Result result = executeUpdate(object.getClass(), sql, mapping.getAutoGeneratedColumns(),
-						parameterTypes, parameters);
+				final Result result = executeUpdate(object.getClass(), sql, 
+						mapping.getAutoGeneratedColumns(), parameters);
 				setAutoGeneratedKeys(object, result);
 				ret = result.getRowsModified();
 			} else {
@@ -1190,7 +1156,7 @@ public final class Persist {
 						+ "] autoUpdateGeneratedKeys is set to [true] but the database doesn't support this feature");
 			}
 		} else {
-			ret = executeUpdate(sql, parameterTypes, parameters);
+			ret = executeUpdate(sql, parameters);
 		}
 		return ret;
 	}
@@ -1221,7 +1187,8 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	public int update(final Object object) {
-		final Mapping mapping = getMapping(object.getClass());
+		final TableMapping mapping = getTableMapping(object.getClass(), "update()");
+		
 		if (mapping.getPrimaryKeys().length == 0) {
 			throw new RuntimeSQLException("Table " + mapping.getTableName() + " doesn't have a primary key");
 		}
@@ -1234,9 +1201,8 @@ public final class Persist {
 		for (String primaryKey : mapping.getPrimaryKeys()) {
 			columns[i++] = primaryKey;
 		}
-		final int[] parameterTypes = mapping.getColumnTypes(columns);
 		final Object[] parameters = getParametersFromObject(object, columns, mapping);
-		return executeUpdate(sql, parameterTypes, parameters);
+		return executeUpdate(sql, parameters);
 	}
 
 	/**
@@ -1266,15 +1232,14 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	public int delete(final Object object) {
-		final Mapping mapping = getMapping(object.getClass());
+		final TableMapping mapping = getTableMapping(object.getClass(), "delete()");
 		if (mapping.getPrimaryKeys().length == 0) {
 			throw new RuntimeSQLException("Table " + mapping.getTableName() + " doesn't have a primary key");
 		}
 		final String sql = mapping.getDeleteSql();
 		final String[] columns = mapping.getPrimaryKeys();
-		final int[] parameterTypes = mapping.getColumnTypes(columns);
 		final Object[] parameters = getParametersFromObject(object, columns, mapping);
-		return executeUpdate(sql, parameterTypes, parameters);
+		return executeUpdate(sql, parameters);
 	}
 
 	/**
@@ -1390,7 +1355,7 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	public <T> T readByPrimaryKey(final Class<T> objectClass, final Object... primaryKeyValues) {
-		final Mapping mapping = getMapping(objectClass);
+		final TableMapping mapping = getTableMapping(objectClass, "readByPrimaryKey()");
 		final String sql = mapping.getSelectSql();
 		return read(objectClass, sql, primaryKeyValues);
 	}
@@ -1440,7 +1405,7 @@ public final class Persist {
 	 * 
 	 * @since 1.0
 	 */
-	public <T> List<T> readList(final Class<T> objectClass, final PreparedStatement statement,
+	public <T> List<T> readList(final Class<T> objectClass, final PreparedStatement statement, 
 			final Object... parameters) {
 		setParameters(statement, parameters);
 		try {
@@ -1487,7 +1452,7 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	public <T> List<T> readList(final Class<T> objectClass) {
-		final Mapping mapping = getMapping(objectClass);
+		final TableMapping mapping = getTableMapping(objectClass, "readList(Class)");
 		final String sql = mapping.getSelectAllSql();
 		return readList(objectClass, sql);
 	}
@@ -1578,7 +1543,7 @@ public final class Persist {
 	 * @since 1.0
 	 */
 	public <T> Iterator<T> readIterator(final Class<T> objectClass) {
-		final Mapping mapping = getMapping(objectClass);
+		final TableMapping mapping = getTableMapping(objectClass, "readIterator(Class)");
 		final String sql = mapping.getSelectAllSql();
 		return readIterator(objectClass, sql);
 	}

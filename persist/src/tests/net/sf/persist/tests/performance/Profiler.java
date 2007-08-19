@@ -35,7 +35,7 @@ public class Profiler {
 }
 
 /**
- * Translator that adds Jamon monitors around every method of the Persist and Mapping classes
+ * Translator that adds Jamon monitors around every method of the Persist and TableMapping classes
  */
 class JamonTranslator implements Translator {
    
@@ -45,7 +45,7 @@ class JamonTranslator implements Translator {
    
     public void onLoad(ClassPool pool, String classname) throws NotFoundException, CannotCompileException {
     	
-    	if (classname.equals("net.sf.persist.Persist")) /* || classname.endsWith("net.sf.persist.Mapping")) */ {
+    	if (classname.equals("net.sf.persist.Persist")) /* || classname.endsWith("net.sf.persist.TableMapping")) */ {
     		
 	        CtClass cc = pool.get(classname);
 	        for (CtMethod method : cc.getDeclaredMethods()) {

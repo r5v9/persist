@@ -4,7 +4,7 @@
 package net.sf.persist.tests.common;
 
 import net.sf.persist.annotations.Column;
-import net.sf.persist.annotations.NoPersist;
+import net.sf.persist.annotations.NoColumn;
 import net.sf.persist.annotations.Table;
 
 @Table(name="simple")
@@ -18,11 +18,11 @@ public class Simple08 {
 	public long getId() { return id; }
 	public void setId(long id) { this.id = id; }
 
-	@NoPersist
+	@NoColumn
 	public String getHelloWorld() { return "hello world"; }
 	public void setHelloWorld(String stringCol) { /* do nothing */ }
 
-	@NoPersist @Column(name="int_col") // conflicting annotations -- will blow
+	@NoColumn @Column(name="int_col") // conflicting annotations -- will blow
 	public long getIntCol() { return intCol; }
 	public void setIntCol(long intCol) { this.intCol = intCol; }
 	

@@ -1,3 +1,4 @@
+
 // $Id$
 
 package net.sf.persist.tests.framework;
@@ -21,17 +22,38 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
+import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.annotation.Annotation;
 
 /**
  * Set of helpers to build and manipulate beans at runtime.
  */
 public class DynamicBean {
-
-	public static Class createBeanClass(BeanMap beanMap) {
+	
+	public static Class createBeanClass(BeanMap beanMap, boolean noTable) {
 
 		ClassPool pool = ClassPool.getDefault();
-		CtClass cc = pool.makeClass("net.sf.persist.tests.generated." + beanMap.getClassName());
+		CtClass cc = pool.makeClass("net.sf.persist.tests.generated." 
+				+ beanMap.getClassName() + (noTable ? "NoTable" : ""));
 
+		if (noTable) {	
+			ClassFile cf = cc.getClassFile();
+			ConstPool cp = cf.getConstPool();
+			AnnotationsAttribute attr = new AnnotationsAttribute(cp, AnnotationsAttribute.visibleTag);
+			Annotation a;
+			try {
+				a = new Annotation(cp, pool.get("net.sf.persist.annotations.NoTable"));
+			} catch (NotFoundException e) {
+				throw new RuntimeException(e);
+			}
+			attr.setAnnotation(a);
+			cf.addAttribute(attr);
+			cf.setVersionToJava5();
+		}
+		
 		try {
 
 			for (FieldMap fieldMap : beanMap.getFields()) {
@@ -259,6 +281,47 @@ public class DynamicBean {
 
 		return true;
 	}
+	
+	
+	public static boolean compareBeansFromDifferentClasses(Object o1, Object o2) {
+
+		if (o1 == null && o2 == null)
+			return true;
+		if (o1 == o2)
+			return true;
+		if (o1 == null && o2 != null)
+			return false;
+		if (o1 != null && o2 == null)
+			return false;
+
+		try {
+
+			for (Field f1 : o1.getClass().getDeclaredFields()) {
+				f1.setAccessible(true);
+				Object v1 = f1.get(o1);
+				
+				Field f2;
+				try {
+					f2 = o2.getClass().getDeclaredField(f1.getName());
+				} catch (NoSuchFieldException e) {
+					return false;
+				}
+				f2.setAccessible(true);
+				Object v2 = f2.get(o2);
+				
+				if (!compareValues(v1, v2))
+					return false;
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		return true;
+	}
+
+	
+	
 
 	/**
 	 * Compare values trying to convert types if they are found to be compatible
