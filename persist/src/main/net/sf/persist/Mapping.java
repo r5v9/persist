@@ -1,4 +1,3 @@
-
 // $Id$
 
 package net.sf.persist;
@@ -10,30 +9,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Mapping {
-	
+
 	public abstract Method getGetterForColumn(String columnName);
+
 	public abstract Method getSetterForColumn(String columnName);
-	
-	
+
 	// ---------- utility methods ----------
-	
+
 	/**
-	 * Factory method to create a Mapping based on a Class.
-	 * Will return a NoTableAnnotation if the class has a NoTable annotation set,
-	 * or TableAnnotation otherwise.
+	 * Factory method to create a Mapping based on a Class. Will return a
+	 * NoTableAnnotation if the class has a NoTable annotation set, or
+	 * TableAnnotation otherwise.
 	 */
-	public static final Mapping getMapping(final DatabaseMetaData metaData, final Class objectClass, 
+	public static final Mapping getMapping(final DatabaseMetaData metaData, final Class objectClass,
 			final NameGuesser nameGuesser) {
-		
+
 		// get @NoTable annotation
 		final net.sf.persist.annotations.NoTable noTableAnnotation = (net.sf.persist.annotations.NoTable) objectClass
-			.getAnnotation(net.sf.persist.annotations.NoTable.class);
-		
+				.getAnnotation(net.sf.persist.annotations.NoTable.class);
+
 		// if @NoTable is set, build a NoTableAnnotation
-		if (noTableAnnotation!=null) {
+		if (noTableAnnotation != null) {
 			return new NoTableMapping(objectClass, nameGuesser);
 		}
-		
+
 		// otherwise, build a TableAnnotation
 		else {
 			try {
@@ -43,12 +42,12 @@ public abstract class Mapping {
 			}
 		}
 	}
-	
+
 	/**
-	 * Returns an array with maps for annotations, getters and setters.
-	 * Keys in each map are field names.
+	 * Returns an array with maps for annotations, getters and setters. Keys in
+	 * each map are field names.
 	 */
-	protected static final Map[] getFieldsMaps(final Class objectClass) { // package visibility so that NoTableMapping can use it
+	protected static final Map[] getFieldsMaps(final Class objectClass) {
 		final Method[] methods = objectClass.getMethods();
 
 		// create map with all getters and setters
@@ -72,7 +71,8 @@ public abstract class Mapping {
 		}
 
 		// assemble annotations, getters and setters maps
-		// a field is only taken into consideration if it has a getter and a setter
+		// a field is only taken into consideration if it has a getter and a
+		// setter
 
 		final Map<String, net.sf.persist.annotations.Column> annotationsMap = new HashMap();
 		final Map<String, Method> gettersMap = new HashMap();
@@ -110,7 +110,8 @@ public abstract class Mapping {
 					continue;
 				}
 
-				// assert that getters and setters have valid and compatible types
+				// assert that getters and setters have valid and compatible
+				// types
 				if (getterSetter[1].getParameterTypes().length != 1) {
 					throw new RuntimeSQLException("Setter [" + getterSetter[1]
 							+ "] should have a single parameter but has " + getterSetter[1].getParameterTypes().length);
@@ -128,7 +129,8 @@ public abstract class Mapping {
 
 				if (getterAnnotation != null && setterAnnotation != null) {
 
-					// if both getter and setter have annotations, make sure they are equals
+					// if both getter and setter have annotations, make sure
+					// they are equals
 					if (!getterAnnotation.equals(setterAnnotation)) {
 
 						final String getterAnn = getterAnnotation.toString().substring(
@@ -140,8 +142,8 @@ public abstract class Mapping {
 								setterAnnotation.toString().lastIndexOf(')'));
 
 						throw new RuntimeSQLException("Annotations for getter [" + getterSetter[0] + "] and setter ["
-								+ getterSetter[1] + "] have different annotations [" + getterAnn 
-								+ "] [" + setterAnn + "]");
+								+ getterSetter[1] + "] have different annotations [" + getterAnn + "] [" + setterAnn
+								+ "]");
 					}
 
 					annotation = getterAnnotation;

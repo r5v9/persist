@@ -1,4 +1,3 @@
-
 // $Id$
 
 package net.sf.persist.annotations;
@@ -14,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Table {
-	
+
 	/**
 	 * Name of the table mapped to the class.
 	 */
