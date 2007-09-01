@@ -38,7 +38,7 @@ public abstract class Mapping {
 			try {
 				return new TableMapping(metaData, objectClass, nameGuesser);
 			} catch (SQLException e) {
-				throw new RuntimeSQLException(e);
+				throw new PersistException(e);
 			}
 		}
 	}
@@ -104,7 +104,7 @@ public abstract class Mapping {
 				// check conflicting NoColumn and Column annotations
 				if (noPersistGetter != null || noPersistSetter != null) {
 					if (getterAnnotation != null || setterAnnotation != null) {
-						throw new RuntimeSQLException("Field [" + fieldName + "] from class [" + objectClass.getName()
+						throw new PersistException("Field [" + fieldName + "] from class [" + objectClass.getName()
 								+ "] has conflicting NoColumn and Column annotations");
 					}
 					continue;
@@ -113,14 +113,14 @@ public abstract class Mapping {
 				// assert that getters and setters have valid and compatible
 				// types
 				if (getterSetter[1].getParameterTypes().length != 1) {
-					throw new RuntimeSQLException("Setter [" + getterSetter[1]
+					throw new PersistException("Setter [" + getterSetter[1]
 							+ "] should have a single parameter but has " + getterSetter[1].getParameterTypes().length);
 				}
 				if (getterSetter[0].getReturnType() == void.class) {
-					throw new RuntimeSQLException("Getter [" + getterSetter[0] + "] must have a return parameter");
+					throw new PersistException("Getter [" + getterSetter[0] + "] must have a return parameter");
 				}
 				if (getterSetter[0].getReturnType() != getterSetter[1].getParameterTypes()[0]) {
-					throw new RuntimeSQLException("Getter [" + getterSetter[0] + "] and setter [" + getterSetter[1]
+					throw new PersistException("Getter [" + getterSetter[0] + "] and setter [" + getterSetter[1]
 							+ "] have incompatible types");
 				}
 
@@ -141,7 +141,7 @@ public abstract class Mapping {
 								setterAnnotation.toString().indexOf('(') + 1,
 								setterAnnotation.toString().lastIndexOf(')'));
 
-						throw new RuntimeSQLException("Annotations for getter [" + getterSetter[0] + "] and setter ["
+						throw new PersistException("Annotations for getter [" + getterSetter[0] + "] and setter ["
 								+ getterSetter[1] + "] have different annotations [" + getterAnn + "] [" + setterAnn
 								+ "]");
 					}

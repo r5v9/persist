@@ -276,7 +276,7 @@ public final class TableMapping extends Mapping {
 
 			// test if the specified table name actually exists
 			if (name == null) {
-				throw new RuntimeSQLException("Class [" + objectClass.getName() + "] specifies table ["
+				throw new PersistException("Class [" + objectClass.getName() + "] specifies table ["
 						+ tableAnnotation.name() + "] that does not exist in the database");
 			}
 		} else {
@@ -291,7 +291,7 @@ public final class TableMapping extends Mapping {
 				}
 			}
 			if (name == null) {
-				throw new RuntimeSQLException("Class [" + objectClass.getName()
+				throw new PersistException("Class [" + objectClass.getName()
 						+ "] does not specify a table name through a Table annotation and no guessed table names "
 						+ guessedNames + " exist in the database");
 			}
@@ -358,7 +358,7 @@ public final class TableMapping extends Mapping {
 
 			// check if the specified column actually exists in the table
 			if (columnName == null) {
-				throw new RuntimeSQLException("Field [" + fieldName + "] from class [" + objectClass.getName()
+				throw new PersistException("Field [" + fieldName + "] from class [" + objectClass.getName()
 						+ "] specifies column [" + annotation.name() + "] on table ["
 						+ tableName.toLowerCase(Locale.ENGLISH) + "] that does not exist in the database");
 			}
@@ -372,7 +372,7 @@ public final class TableMapping extends Mapping {
 				}
 			}
 			if (columnName == null) {
-				throw new RuntimeSQLException("Field [" + fieldName + "] from class [" + objectClass.getName()
+				throw new PersistException("Field [" + fieldName + "] from class [" + objectClass.getName()
 						+ "] does not specify a column name through a Column annotation and no guessed column names "
 						+ guessedNames + " exist in the database. If this field is not supposed to be associated "
 						+ "with the database, please annotate it with @NoColumn");
