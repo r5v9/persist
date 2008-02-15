@@ -19,10 +19,10 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.persist.DefaultNameGuesser;
-import net.sf.persist.TableMapping;
 import net.sf.persist.Persist;
+import net.sf.persist.PersistException;
 import net.sf.persist.Result;
-import net.sf.persist.RuntimeSQLException;
+import net.sf.persist.TableMapping;
 import net.sf.persist.tests.framework.ConnectionHelper;
 import net.sf.persist.tests.framework.DynamicBean;
 
@@ -396,7 +396,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple01.class, simple.getId());
 			fail("Object with invalid column name did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Field [intCol] from class [net.sf.persist.tests.common.Simple01] specifies column [hello_world] on table [simple] that does not exist in the database");
 		}
@@ -405,7 +405,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple02.class, simple.getId());
 			fail("Object with invalid table name did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Class [net.sf.persist.tests.common.Simple02] specifies table [hello_world] that does not exist in the database");
 		}
@@ -414,7 +414,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple03.class, simple.getId());
 			fail("Object lacking field did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Column [int_col] from result set does not have a mapping to a field in [net.sf.persist.tests.common.Simple03]");
 		}
@@ -423,7 +423,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple04.class, simple.getId());
 			fail("Object with incompatible getter and setter did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Getter [public long net.sf.persist.tests.common.Simple04.getIntCol()] and setter [public void net.sf.persist.tests.common.Simple04.setIntCol(boolean)] have incompatible types");
 		}
@@ -432,7 +432,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple05.class, simple.getId());
 			fail("Object with invalid table name did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(
 					e.getMessage(),
 					"Class [net.sf.persist.tests.common.Simple05] does not specify a table name through a Table annotation and no guessed table names [simple05, simple05s] exist in the database");
@@ -442,7 +442,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple06.class, simple.getId());
 			fail("Object with different annotations for getter and setter did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertTrue(e.getMessage()
 					.startsWith("Annotations for getter [public long net.sf.persist.tests.common.Simple06.getIntCol()] and setter [public void net.sf.persist.tests.common.Simple06.setIntCol(long)] have different annotations"));
 		}
@@ -451,7 +451,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple07.class, simple.getId());
 			fail("Object without getter and setter did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Field [foo] from class [net.sf.persist.tests.common.Simple07] does not specify a column name through a Column annotation and no guessed column names [foo, foos] exist in the database. If this field is not supposed to be associated with the database, please annotate it with @NoColumn");
 		}
@@ -460,7 +460,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple08.class, simple.getId());
 			fail("Object with conflicting annotations did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Field [intCol] from class [net.sf.persist.tests.common.Simple08] has conflicting NoColumn and Column annotations");
 		}
@@ -469,7 +469,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple09.class, simple.getId());
 			fail("Object with getter returning void did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Getter [public void net.sf.persist.tests.common.Simple09.getStringCol()] must have a return parameter");
 		}
@@ -478,7 +478,7 @@ public abstract class TestSimple {
 		try {
 			persist.readByPrimaryKey(Simple10.class, simple.getId());
 			fail("Object with setter having no parameters did not trigger exception");
-		} catch (RuntimeSQLException e) {
+		} catch (PersistException e) {
 			assertEquals(e.getMessage(),
 					"Setter [public void net.sf.persist.tests.common.Simple10.setStringCol()] should have a single parameter but has 0");
 		}
