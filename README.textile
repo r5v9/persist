@@ -1,4 +1,8 @@
-h1. Persist User Guide
+<!-- code highlighting -->
+<link href="http://google-code-prettify.googlecode.com/svn/trunk/src/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="http://google-code-prettify.googlecode.com/svn/trunk/src/prettify.js"></script>
+
+h1. Persist
 
 h2. Introduction
 
@@ -24,9 +28,9 @@ h2. Quickstart
 
 A Persist engine only requires a @java.sql.Connection@ to be created:
 
-<code>
+<pre class="prettyprint">
 	Persist persist = new Persist(connection);
-</code>
+</pre>
 
 Persist supports several different mapping strategies:
 
@@ -35,7 +39,7 @@ h3. POJOs mapped to tables
 By default, if no annotations specify a given class should not be mapped to a table, Persist will try to find a
 table that matches that class and create a mapping between fields and columns.
 
-<code>
+<pre class="prettyprint">
 	// inserts a new customer (the class _Customer_ is mapped to the table _customer_ automatically)
 	persist.insert(customer);
 
@@ -47,14 +51,14 @@ table that matches that class and create a mapping between fields and columns.
 
 	// fetch all customers and assign the ResultSet to an Iterator
 	Iterator allCustomersIterator = persist.readIterator(Customer.class, "select * from customer");
-</code>
+</pre>
 
 h3. POJOs not mapped to tables
 
 If a class is annotated with @@NoTable@, Persist will not try to map it to a table, and the class will
 only be able to hold data produced by queries.
 
-<code>
+<pre class="prettyprint">
 	@NoTable
 	class QueryData {
 	   private int count;
@@ -69,14 +73,14 @@ only be able to hold data produced by queries.
 
 	QueryData qd1 = persist.read(QueryData.class, "select 1 as count, 'hello' as concat_name from dual");
 	QueryData qd2 = persist.read(QueryData.class, "select 2 as counts, null as concatnames from dual");
-</code>
+</pre>
 
 h3. java.util.Map's
 
 @Map@'s can be used to hold data from queries. Persist will convert values returned from the query to Java
 types. Keys in the table are the names of the columns returned in lower case.
 
-<code>
+<pre class="prettyprint">
 	// fetch a customer using a custom query and return the result as a map
 	Map&lt;String,Object&gt; customerMap = persist.readMap("select * from customer where id=?", 10);
 
@@ -85,28 +89,28 @@ types. Keys in the table are the names of the columns returned in lower case.
 
 	// fetch all customers and assign the ResultSet to an Iterator which maps rows to Map instances
 	Iterator allCustomersIterator = persist.readMapIterator("select * from customer");
-</code>
+</pre>
 
 h3. Java primitive types
 
 If a query returns a single column, Persist can map data directly into primitive types (either single values or lists):
 
-<code>
+<pre class="prettyprint">
 	// return customer name as String
 	String name = persist.read(String.class, "select name from customer where id=?", 55);
 
 	// fetch all customer id's as a list of integers
 	List&lt;Integer&gt; ids = persist.readList(int.class, "select id from customer");
-</code>
+</pre>
 
 h3. Custom queries with no returning data
 
 Arbitrary queries that return no data can be easily executed.
 
-<code>
+<pre class="prettyprint">
 	// execute arbitrary SQL with parameters
 	persist.executeUpdate("delete from customer where id in (?,?)", 10, 20);
-</code>
+</pre>
 
 For the POJO mapping strategies, persist can map names either using explicit annotations or through a _name
 guesser_ which translates class and field names to table and column names. A name guesser is a class that implements an
@@ -120,9 +124,9 @@ h2. Creating Persist instances
 
 Persist only requires a @java.sql.Connection@ object to be created:
 
-<code>
+<pre class="prettyprint">
 	Persist persist = new Persist(connection);
-</code>
+</pre>
 
 h3. Caches
 
@@ -131,13 +135,13 @@ basis. If an application has to deal with connections with different databases, 
 
 To specify different caches, use a _cache name_ in the constructor:
 
-<code>
+<pre class="prettyprint">
 	// Create a persist instance for MySQL using the default cache
 	Persist persistMysql = new Persist(connectionMysql);
 
 	// Create a persist instance for Oracle using the "oracle" cache name
 	Persist persistOracle = new Persist("oracle", connectionOracle);
-</code>
+</pre>
 
 h3. Logging
 
@@ -170,15 +174,15 @@ determine a global translation mechanism between class and field names to table 
 
 Consider the following table definition and its associated bean
 
-<code>
+<pre class="prettyprint">
 	create table customer (
 	  id int auto_increment,
 	  name varchar(255),
 	  primary key (id)
 	)
-</code>
+</pre>
 
-<code>
+<pre class="prettyprint">
 	class Customer {
 	   private int id;
 	   private String name;
@@ -190,7 +194,7 @@ Consider the following table definition and its associated bean
 	   public String getName() { return name; }
 	   public void setName(String name) { this.name = name; }
 	}
-</code>
+</pre>
 
 class @Customer@ and its fields don't specify annotations to explicitly define which tables and columns
 should be used. Therefore, when Persist tries to map this class, it will use a _name guesser_. Name guessers are
@@ -215,14 +219,14 @@ interacts with in an internal cache
 After a mapping is created, Persist can perform CRUD operations directly on instances of the @Customer@
 POJO. To illustrate the whole process, consider the following code
 
-<code>
+<pre class="prettyprint">
 	// create a new customer instance
 	Customer customer = new Customer();
 	customer.setName(&quot;a new customer&quot;);
 
 	// fetch a customer using its primary key
 	Customer c = persist.readByPrimaryKey(Customer.class, 10);
-</code>
+</pre>
 
 The moment persist has contact with @Customer@, it will build a mapping automatically and cache it. With
 the mapping, it will know that the @Customer@ class is mapped to the @customer@ table, and that @id@
@@ -231,7 +235,7 @@ all columns in @customer@ having the specified primary key (@id@).
 
 Other CRUD operations can be used directly as well
 
-<code>
+<pre class="prettyprint">
 	// insert
 	persist.insert(customer);
 
@@ -240,7 +244,7 @@ Other CRUD operations can be used directly as well
 
 	// delete
 	persist.delete(customer);
-</code>
+</pre>
 
 *Important note:* Persist can only perform +@readByPrimaryKey@+, +@update@+ and +@delete@+
 operations for classes mapped to tables that +have primary keys+. @insert@ and all the @read@
@@ -248,7 +252,7 @@ operations can work on any POJO mapped on any table.
 
 Persist supports several different ways of reading data from mapped tables:
 
-<code>
+<pre class="prettyprint">
 	// fetch a single customer using a custom query
 	Customer customer = persist.read(Customer.class, "select * from customer where id = 10");
 
@@ -260,7 +264,7 @@ Persist supports several different ways of reading data from mapped tables:
 
 	// fetch all customers using a custom query and assign the ResultSet to an Iterator which maps rows to Customer instances
 	Iterator allCustomersIterator = persist.readIterator(Customer.class, &quot;select * from customer where id in (?,?)&quot;, 10, 20);
-</code>
+</pre>
 
 h3. Types and conversions
 
@@ -305,7 +309,7 @@ names), Persist will throw an exception while trying to use the class
 
 To illustrate how this works, consider the following class:
 
-<code>
+<pre class="prettyprint">
 	class QueryData {
 	   private int count;
 	   private String concatName;
@@ -316,7 +320,7 @@ To illustrate how this works, consider the following class:
 	   public String getConcatName() { return concatName; }
 	   public void setConcatName(String concatName) { this.concatName = concatName; }
 	}
-</code>
+</pre>
 
 Persist would create the following mapping for this class:
 
@@ -326,10 +330,10 @@ Persist would create the following mapping for this class:
 
 Some examples of how this would work using dummy queries:
 
-<code>
+<pre class="prettyprint">
 	QueryData qd1 = persist.read(QueryData.class, "select 1 as count, 'hello' as concat_name from dual");
 	QueryData qd2 = persist.read(QueryData.class, "select 2 as counts, null as concatnames from dual");
-</code>
+</pre>
 
 Type conversions are performed using the same conversion table as POJOs mapped to tables use.
 
@@ -338,7 +342,7 @@ h2. java.util.Map's
 Query results can be mapped directly to @java.util.Map@ instances, using the readMap-prefixed methods.
 Keys in the map are the names of the columns in lower case, and values are fetched from the ResultSet.
 
-<code>
+<pre class="prettyprint">
 	// fetch a customer using a custom query and return the result as a map
 	Map&lt;String,Object&gt; customerMap = persist.readMap("select * from customer where id=?", 10);
 
@@ -347,7 +351,7 @@ Keys in the map are the names of the columns in lower case, and values are fetch
 
 	// fetch all customers and assign the ResultSet to an Iterator which maps rows to Map instances
 	Iterator allCustomersIterator = persist.readMapIterator("select * from customer");
-</code>
+</pre>
 
 Values are retrieved from the ResultSet according with their SQL types (as defined in java.sql.Types), so that
 for each SQL type Persist will request the value according with a pre-defined Java type, as specified in the following
@@ -390,12 +394,14 @@ h2. Primitive types
 Persist can map query results having a single column directly to primitive Java types (such as int, Double,
 String, etc.), either as single values or lists.
 
-<code>
+<pre class="prettyprint">
 	// return customer name as String
 	String name = persist.read(String.class, "select name from customer where id=?", 55);
 
 	// fetch all customer id's as a list of integers
 	List&lt;Integer&gt; ids = persist.readList(int.class, "select id from customer");
-</code>
+</pre>
 
 Type conversions are performed using the same conversion table as POJOs mapped to tables use.
+
+<script>prettyPrint()</script>
