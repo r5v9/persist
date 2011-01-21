@@ -1,7 +1,5 @@
 h1. Persist
 
-h2. Introduction
-
 Persist is a Java-based ORM/DAO tool. It provides only the minimal amount of functionalities necessary to map
 objects or maps from database queries and to statement parameters.
 
@@ -14,7 +12,7 @@ Persist does not require explicit mappings from POJOs to database tables. As lon
 conventions that relate database names with POJO names, Persist will require virtually no mappings. It can, however, be
 instructed to map Java classes and fields to database tables and columns using annotations.
 
-Persist requires no singletons, no @ThreadLocal@'s, no global objects and no configuration files. It has
+Persist requires no singletons, no ThreadLocal's, no global objects and no configuration files. It has
 no external dependencies (although it will use Log4j, if available). It has a very small, robust and straightforward
 codebase, which can be easily debugged in case you face an unforeseen problem. It is actively tested (with a high code
 coverage) for MySQL, PostgreSQL, H2/HSQLDB, Derby, Oracle, DB2 and MS SQL Server. It imposes a very small overhead to
@@ -78,10 +76,10 @@ types. Keys in the table are the names of the columns returned in lower case.
 
 <pre>
  // fetch a customer using a custom query and return the result as a map
- Map&lt;String,Object&gt; customerMap = persist.readMap("select * from customer where id=?", 10);
+ Map<String,Object> customerMap = persist.readMap("select * from customer where id=?", 10);
 
  // fetch all customers and result the results as Map instances in a List 
- List&lt;Map&lt;String,Object&gt;&gt; customerMapList = persist.readMapList("select * from customer");
+ List<Map<String,Object>> customerMapList = persist.readMapList("select * from customer");
 
  // fetch all customers and assign the ResultSet to an Iterator which maps rows to Map instances
  Iterator allCustomersIterator = persist.readMapIterator("select * from customer");
@@ -96,7 +94,7 @@ If a query returns a single column, Persist can map data directly into primitive
  String name = persist.read(String.class, "select name from customer where id=?", 55);
 
  // fetch all customer id's as a list of integers
- List&lt;Integer&gt; ids = persist.readList(int.class, "select id from customer");
+ List<Integer> ids = persist.readList(int.class, "select id from customer");
 </pre>
 
 h3. Custom queries with no returning data
@@ -218,7 +216,7 @@ POJO. To illustrate the whole process, consider the following code
 <pre>
  // create a new customer instance
  Customer customer = new Customer();
- customer.setName(&quot;a new customer&quot;);
+ customer.setName("a new customer");
 
  // fetch a customer using its primary key
  Customer c = persist.readByPrimaryKey(Customer.class, 10);
@@ -253,13 +251,13 @@ Persist supports several different ways of reading data from mapped tables:
  Customer customer = persist.read(Customer.class, "select * from customer where id = 10");
 
  // fetch all customers
- List&lt;Customer&gt; allCustomersList = persist.readList(Customer.class);
+ List<Customer> allCustomersList = persist.readList(Customer.class);
 
  // fetch a set of customers using a custom query
- List&lt;Customer&gt; customersList = persist.readList(Customer.class, &quot;select * from customer where id &lt; ?&quot;, 100);
+ List<Customer> customersList = persist.readList(Customer.class, "select * from customer where id < ?", 100);
 
  // fetch all customers using a custom query and assign the ResultSet to an Iterator which maps rows to Customer instances
- Iterator allCustomersIterator = persist.readIterator(Customer.class, &quot;select * from customer where id in (?,?)&quot;, 10, 20);
+ Iterator allCustomersIterator = persist.readIterator(Customer.class, "select * from customer where id in (?,?)", 10, 20);
 </pre>
 
 h3. Types and conversions
@@ -340,10 +338,10 @@ Keys in the map are the names of the columns in lower case, and values are fetch
 
 <pre>
  // fetch a customer using a custom query and return the result as a map
- Map&lt;String,Object&gt; customerMap = persist.readMap("select * from customer where id=?", 10);
+ Map<String,Object> customerMap = persist.readMap("select * from customer where id=?", 10);
 
  // fetch all customers and result the results as Map instances in a List 
- List&lt;Map&lt;String,Object&gt;&gt; customerMapList = persist.readMapList("select * from customer");
+ List<Map<String,Object>> customerMapList = persist.readMapList("select * from customer");
 
  // fetch all customers and assign the ResultSet to an Iterator which maps rows to Map instances
  Iterator allCustomersIterator = persist.readMapIterator("select * from customer");
@@ -395,7 +393,7 @@ String, etc.), either as single values or lists.
  String name = persist.read(String.class, "select name from customer where id=?", 55);
 
  // fetch all customer id's as a list of integers
- List&lt;Integer&gt; ids = persist.readList(int.class, "select id from customer");
+ List<Integer> ids = persist.readList(int.class, "select id from customer");
 </pre>
 
 Type conversions are performed using the same conversion table as POJOs mapped to tables use.
