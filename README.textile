@@ -20,6 +20,9 @@ comparable plain JDBC operations, making it very attractive for high performance
 
 Persist is distributed under a BSD license.
 
+* "Mailing list":http://groups.google.com/group/persist
+* "Issues":https://github.com/rufiao/persist/issues
+
 h2. Quickstart
 
 A Persist engine only requires a @java.sql.Connection@ to be created:
