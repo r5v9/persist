@@ -71,7 +71,7 @@ only be able to hold data produced by queries.
 
 h3. java.util.Map's
 
-@Map@'s can be used to hold data from queries. Persist will convert values returned from the query to Java
+@Map@ instances can be used to hold data from queries. Persist will convert values returned from the query to Java
 types. Keys in the table are the names of the columns returned in lower case.
 
 <pre>
@@ -155,7 +155,7 @@ There are a few annotations that control the mapping behavior from classes to da
 * @@Column@ can be associated with a setter or getter of a field and specify the name of the column to be
 associated with that field, and/or specify if the field is auto-incremented by the database upon insertion.
 * @@NoTable@ can be associated with a class to specify the class should not be mapped to a table in the
-database. Classes annotated with @NoTable can only be used to hold data from queries.
+database. Classes annotated with @@NoTable@ can only be used to hold data from queries.
 * @@NoColumn@ can be associated with a setter or getter of a field and specify it should not be mapped to
 a column in the database (by default, Persist attempts to map all fields of a given class to columns in the table
 associated with their class).
@@ -224,7 +224,7 @@ POJO. To illustrate the whole process, consider the following code
 
 The moment persist has contact with @Customer@, it will build a mapping automatically and cache it. With
 the mapping, it will know that the @Customer@ class is mapped to the @customer@ table, and that @id@
-is the primary key in that table@. With that information, Persist can issue a @select@ SQL statement querying for
+is the primary key in that table. With that information, Persist can issue a @select@ SQL statement querying for
 all columns in @customer@ having the specified primary key (@id@).
 
 Other CRUD operations can be used directly as well
