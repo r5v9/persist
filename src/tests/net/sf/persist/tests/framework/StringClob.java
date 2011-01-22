@@ -73,4 +73,14 @@ public class StringClob implements Clob {
 		throw new RuntimeException("truncate(long) not implemented");
 	}
 
+    @Override
+    public void free() throws SQLException {
+        throw new RuntimeException("free() not implemented");
+    }
+
+    @Override
+    public Reader getCharacterStream(long pos, long length) throws SQLException {
+        throw new RuntimeException("getCharacterStream(long, long) not implemented");
+    }
+
 }

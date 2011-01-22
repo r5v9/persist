@@ -1,13 +1,4 @@
 
-CREATE ROLE persist LOGIN
-  ENCRYPTED PASSWORD 'md5fd309c7743308991db59ae0f924556d2'
-  NOSUPERUSER NOINHERIT CREATEDB NOCREATEROLE;
-
-CREATE DATABASE persist
-  WITH OWNER = persist
-       ENCODING = 'SQL_ASCII'
-       TABLESPACE = pg_default;
-
 create table simple (
 	id serial,
 	string_col varchar(255),
@@ -23,9 +14,9 @@ create table numeric_types (
 	numeric_col numeric, 
 	real_col real, 
 	double_precision_col double precision,
-	--money_col money,
-	--bit_col bit,
-	--bit_varying_col bit varying,
+	-- money_col money,
+	-- bit_col bit,
+	-- bit_varying_col bit varying,
 	boolean_col boolean
 );
 

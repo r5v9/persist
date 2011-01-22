@@ -60,4 +60,14 @@ public class BytesBlob implements Blob {
 		throw new RuntimeException("truncate(long) not implemented");
 	}
 
+    @Override
+    public void free() throws SQLException {
+        throw new RuntimeException("free() not implemented");
+    }
+
+    @Override
+    public InputStream getBinaryStream(long pos, long length) throws SQLException {
+        throw new RuntimeException("getBinaryStream(long, long) not implemented");
+    }
+
 }

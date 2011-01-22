@@ -1,0 +1,5 @@
+bin
+build/work
+build/lib/jdbc-drivers/ojdbc14.jar
+.pydevproject
+*.pyc

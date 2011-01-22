@@ -13,9 +13,10 @@ import net.sf.persist.tests.framework.BeanMap;
 import net.sf.persist.tests.framework.BeanTest;
 import net.sf.persist.tests.framework.FieldMap;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-
+@Ignore("ignoring until a windows VM is automated")
 public class TestSqlserver extends TestSimple {
 	
 	public String getProperties() {

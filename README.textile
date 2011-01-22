@@ -403,6 +403,40 @@ String, etc.), either as single values or lists.
 
 Type conversions are performed using the same conversion table as POJOs mapped to tables use.
 
+h2. Developing for the project
+
+In order to run the tests for all the supported databases you'll need the following databases installed:
+
+* MySQL
+* PostgreSQL
+* H2/HSQLDB
+* Derby
+* Oracle
+* DB2
+* MS SQL Server
+
+One easy way to test against all databases supported in Linux (all the ones listed above except MS SQL Server) is to build a VM (using VMWare, VirtualBox, Parallels, KVM, Xen, etc.). 
+
+In order to build a Ubuntu VM with the databases ready for testing:
+
+# Install Ubuntu Server using your preferred virtualization server having the user 'ubuntu' with sudo access
+# Upgrade the VM packages: @apt-get dist-upgrade@
+# Install openssh in the VM: @apt-get install openssh-server@
+# Copy your ssh public key to the VM's @~ubuntu/.ssh/authorized_keys@
+# In the VM, run @sudo visudo@ and add the following line to the end of the file: @ubuntu ALL=(ALL) NOPASSWD: ALL@
+# Install Python and Fabric (@easy_install fabric@)
+# Run the command: @cd build && fab install@
+# Configure your /etc/hosts file to map 127.0.0.1 to @dbvm@
+
+To access the databases in the VM, use:
+
+|_. Database |_. Admin user |_. Admin password |_. Admin command line | Persist db command line |
+| MySQL | root | _uses ident_ | mysql -u root | mysql -u persist persist |
+| PostgreSQL | postgres | _uses ident_ | sudo -u postgres psql | psql -d persist -U persist |
+| Oracle | SYS | root | sqlplus SYS/root as SYSDBA | sqlplus persist/persist |
+| Derby | | | | /usr/local/derby/bin/ij then: connect 'jdbc:derby://127.0.0.1/persist;create=true;user=persist;password=persist'; |
+| H2 | | | | java -cp /usr/local/h2/bin/h2-1.2.147.jar org.h2.tools.Shell -url jdbc:h2:tcp://127.0.0.1/persist -user persist -password persist |
+
 h2. License
 
 <pre>

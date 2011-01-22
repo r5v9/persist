@@ -1,5 +1,5 @@
 
-with ij: CONNECT 'jdbc:derby:persist;create=true';
+connect 'jdbc:derby://127.0.0.1/persist;create=true;user=persist;password=persist';
 
 create table simple (
 	id integer not null generated always as identity (start with 1, increment by 1),
@@ -38,3 +38,6 @@ create table datetime_types (
 	time_col time,
 	timestamp_col timestamp
 );
+
+disconnect;
+exit;

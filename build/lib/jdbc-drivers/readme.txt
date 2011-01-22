@@ -1,6 +1,4 @@
 
-$Id$
-
 Drivers for DB2 and Oracle are not included in the source distribution for legal reasons.
 To test on those databases, please download the following drivers:
 

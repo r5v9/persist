@@ -1,7 +1,7 @@
 
 create database `persist`;
 use persist;
-grant all privileges on persist.* to 'persist'@'localhost' identified by 'persist';
+grant all privileges on persist.* to 'persist'@'%' identified by 'persist';
 
 create table simple (
 	id int auto_increment,
@@ -26,7 +26,7 @@ create table numeric_types (
 create table datetime_types (
 	date_col date,
 	datetime_col datetime,
-	--timestamp_col timestamp,
+	-- timestamp_col timestamp,
 	time_col time,
 	year2_col year(2),
 	year4_col year(4)
@@ -88,7 +88,7 @@ create table all_types (
 	enum_col enum('a','b','c'),
 	set_col set('a','b','c'),
 
-	--binary
+	-- binary
 	binary_col binary(255),
 	varbinary_col varbinary(255),
 	tinyblob_col tinyblob,
