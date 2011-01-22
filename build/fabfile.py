@@ -53,7 +53,6 @@ def install_derby():
 	run('wget -c http://apache.mirror.aussiehq.net.au//db/derby/db-derby-10.7.1.1/db-derby-10.7.1.1-bin.tar.gz')
 	sudo('cd /usr/local && rm -rf derby* && tar xfz ~/db-derby*.tar.gz && ln -s db-derby* derby')
 	sudo("""perl -pi -e "s/NetworkServerControl start/NetworkServerControl start -h 0.0.0.0/g" /usr/local/derby/bin/startNetworkServer""")
-	run("""if ! grep -q "derby" ~/.profile 2>/dev/null; then echo -e '\nexport PATH=$PATH:/usr/local/derby/bin' >> ~/.profile; fi""")
 	put('derby.sh', '/tmp')
 	sudo('rm -f /etc/init.d/derby && mv /tmp/derby.sh /etc/init.d/derby && chmod a+x /etc/init.d/derby && update-rc.d derby defaults')
 	sudo('/etc/init.d/derby start')

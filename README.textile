@@ -430,7 +430,7 @@ In order to build a Ubuntu VM with the databases ready for testing:
 
 To access the databases in the VM, use:
 
-|_. Database |_. Admin user |_. Admin password |_. Admin command line | Persist db command line |
+|_. Database |_. Admin user |_. Admin password |_. Admin command line |_. Persist db command line |
 | MySQL | root | _uses ident_ | mysql -u root | mysql -u persist persist |
 | PostgreSQL | postgres | _uses ident_ | sudo -u postgres psql | psql -d persist -U persist |
 | Oracle | SYS | root | sqlplus SYS/root as SYSDBA | sqlplus persist/persist |
