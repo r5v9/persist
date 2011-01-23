@@ -430,12 +430,12 @@ In order to build a Ubuntu VM with the databases ready for testing:
 
 To access the databases in the VM, use:
 
-|_. Database |_. Admin user |_. Admin password |_. Admin command line |_. Persist db command line |
-| MySQL | root | _uses ident_ | mysql -u root | mysql -u persist persist |
-| PostgreSQL | postgres | _uses ident_ | sudo -u postgres psql | psql -d persist -U persist |
-| Oracle | SYS | root | sqlplus SYS/root as SYSDBA | sqlplus persist/persist |
-| Derby | | | | /usr/local/derby/bin/ij then: connect 'jdbc:derby://127.0.0.1/persist;create=true;user=persist;password=persist'; |
-| H2 | | | | java -cp /usr/local/h2/bin/h2-1.2.147.jar org.h2.tools.Shell -url jdbc:h2:tcp://127.0.0.1/persist -user persist -password persist |
+|_. Database |_. Admin command line |_. Persist db command line |
+| MySQL | mysql -u root | mysql -u persist persist |
+| PostgreSQL | sudo -u postgres psql | psql -d persist -U persist |
+| Oracle | sqlplus SYS/root as SYSDBA | sqlplus persist/persist |
+| Derby | | /usr/local/derby/bin/ij then: connect 'jdbc:derby://127.0.0.1/persist;create=true;user=persist;password=persist'; |
+| H2 | | java -cp /usr/local/h2/bin/h2-1.2.147.jar org.h2.tools.Shell -url jdbc:h2:tcp://127.0.0.1/persist -user persist -password persist |
 
 h2. License
 
