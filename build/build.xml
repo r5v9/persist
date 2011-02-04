@@ -77,7 +77,6 @@
 		<delete dir="build/release/doc" includeEmptyDirs="true" failonerror="false" />
 		<mkdir dir="build/release/doc" />
 		<mkdir dir="build/release/doc/api" />
-		<mkdir dir="build/release/doc/manual" />
 		
 		<!-- javadoc -->
 		<javadoc destdir="build/release/doc/api" encoding="UTF-8" docencoding="iso-8859-1" author="true" version="true" use="false" breakiterator="true" windowtitle="${project.title}" classpathref="project.classpath" stylesheetfile="build/javadoc/stylesheet.css">
@@ -87,10 +86,8 @@
 			<link href="http://java.sun.com/j2se/1.5/docs/api" offline="true" packagelistLoc="build/javadoc/j2se-1.5" />
 		</javadoc>
 		
-		<!-- manual -->
-		<copy todir="build/release/doc">
-			 <fileset dir="doc" />
-		</copy>
+		<copy todir="build/release/doc" file="README.textile"/>
+		
 	</target>
 	
 	<target name="test" depends="compile">
