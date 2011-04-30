@@ -84,6 +84,7 @@ public final class TableMapping extends Mapping {
 			final String columnName = resultSet.getString(4);
 			columnsList.add(columnName);
 		}
+		resultSet.close();
 		columns = toArray(columnsList);
 
 		// all primary keys (from db)
@@ -94,6 +95,7 @@ public final class TableMapping extends Mapping {
 			final String columnName = resultSet.getString(4);
 			primaryKeysList.add(columnName);
 		}
+		resultSet.close();
 		primaryKeys = toArray(primaryKeysList);
 
 		// not primary keys
