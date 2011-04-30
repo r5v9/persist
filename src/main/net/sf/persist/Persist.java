@@ -366,7 +366,9 @@ public final class Persist {
 	 */
 	public void closePreparedStatement(final PreparedStatement statement) {
 		try {
-			statement.close();
+			if (statement != null) {
+				statement.close();
+			}
 		} catch (SQLException e) {
 			throw new RuntimeSQLException("Error closing prepared statement: " + e.getMessage(), e);
 		}
@@ -374,8 +376,6 @@ public final class Persist {
 		if (Log.isDebugEnabled(Log.ENGINE)) {
 			Log.debug(Log.ENGINE, "Closed PreparedStatement [" + statement + "]");
 		}
-
-		lastPreparedStatement = null;
 	}
 
 	/**
@@ -395,6 +395,7 @@ public final class Persist {
 	 */
 	public void closeLastPreparedStatement() {
 		closePreparedStatement(lastPreparedStatement);
+		lastPreparedStatement = null;
 	}
 
 	/**
